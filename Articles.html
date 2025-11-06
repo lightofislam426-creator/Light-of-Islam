@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Articles — Light of Islam</title>
+  <meta name="description" content="Long-form Islamic articles in Bangla, English and Arabic. Light of Islam articles library." />
+  <style>
+    :root{--green:#0b5a3a;--gold:#c8a44c;--bg:#f8fbf9;--card:#fff}
+    body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;margin:0;background:var(--bg);color:#092d22}
+    .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+    header{display:flex;align-items:center;gap:12px;padding:8px 0}
+    .logo{width:64px;height:64px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:16px}
+    .list{display:grid;grid-template-columns:1fr;gap:12px}
+    .card{background:#fff;padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(10,30,20,0.06)}
+    .title{font-weight:800;color:var(--green)}
+    .meta{font-size:13px;color:#557964;margin-top:6px}
+    .filter{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{padding:8px 10px;border-radius:8px;border:1px solid rgba(6,70,40,0.06);background:transparent;cursor:pointer}
+    .sidebar .card{position:sticky;top:18px}
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:10000}
+    .modal.show{display:flex}
+    .modal-card{width:900px;max-width:95%;max-height:90%;overflow:auto;background:#fff;border-radius:12px;padding:18px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><img src="images/light-of-islam-logo.png" alt="Logo" style="width:60px;height:60px;object-fit:contain"></div>
+      <div>
+        <h1 style="margin:0;color:var(--green)">Articles Library</h1>
+        <div class="meta">18 long-form articles — categories: Aqeedah, Seerah, Lifestyle, Women, History, Science</div>
+      </div>
+      <div style="margin-left:auto"><a href="index.html">← Back to Home</a></div>
+    </header>
+
+    <div class="grid">
+      <div>
+        <div class="filter card">
+          <strong>Filter by Category:</strong>
+          <div style="margin-left:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" onclick="filterCat('all')">All</button>
+            <button class="btn" onclick="filterCat('A')">A — Aqeedah</button>
+            <button class="btn" onclick="filterCat('B')">B — Seerah</button>
+            <button class="btn" onclick="filterCat('C')">C — Lifestyle</button>
+            <button class="btn" onclick="filterCat('D')">D — Women</button>
+            <button class="btn" onclick="filterCat('E')">E — History</button>
+            <button class="btn" onclick="filterCat('F')">F — Science</button>
+          </div>
+        </div>
+
+        <div id="list" style="margin-top:12px"></div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="card">
+          <strong>Search</strong>
+          <input id="searchBox" placeholder="Search articles..." style="width:100%;padding:8px;margin-top:8px;border-radius:8px;border:1px solid #e8f0ea" oninput="renderList()" />
+          <div style="margin-top:12px">
+            <strong>Languages</strong>
+            <div style="margin-top:8px">
+              <button class="btn" onclick="setLang('en')">English</button>
+              <button class="btn" onclick="setLang('bn')">Bangla</button>
+              <button class="btn" onclick="setLang('ar')">Arabic</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="articleModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="modalTitle" style="margin:0;color:var(--green)"></h2>
+        <button onclick="closeModal()" style="background:none;border:0;font-weight:800;cursor:pointer">✕</button>
+      </div>
+      <div id="modalBody" style="margin-top:12px;line-height:1.7"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // render list
+    let currentCat='all';
+    function setLang(l){ localStorage.setItem('loi_lang', l); renderList(); }
+    function filterCat(c){ currentCat=c; renderList(); }
+    function renderList(){
+      const q = document.getElementById('searchBox').value.toLowerCase();
+      const list = document.getElementById('list'); list.innerHTML='';
+      const lang = localStorage.getItem('loi_lang') || 'en';
+      window.articles.filter(a=>{
+        if(currentCat!=='all' && a.cat!==currentCat) return false;
+        if(q && !(a.title_en.toLowerCase().includes(q) || (a.title_bn && a.title_bn.toLowerCase().includes(q)))) return false;
+        return true;
+      }).forEach(a=>{
+        const card = document.createElement('div'); card.className='card';
+        const title = (lang==='bn'? (a.title_bn||a.title_en) : (lang==='ar'? (a.title_ar||a.title_en) : a.title_en));
+        card.innerHTML = `<div class="title">${escapeHtml(title)}</div><div class="meta">${a.author} • ${a.date} • Category ${a.cat}</div><p style="margin-top:8px">${escapeHtml((a.excerpt||a.content_en||'').slice(0,220))}...</p><div style="margin-top:8px"><a href="javascript:openArticle('${a.id}')">Read full</a></div>`;
+        list.appendChild(card);
+      });
+    }
+    function openArticle(id){
+      const a = window.articles.find(x=>x.id===id); if(!a) return;
+      const lang = localStorage.getItem('loi_lang') || 'en';
+      const title = (lang==='bn'? (a.title_bn||a.title_en) : (lang==='ar'? (a.title_ar||a.title_en) : a.title_en));
+      document.getElementById('modalTitle').textContent = title;
+      let content = (lang==='bn' && a.content_bn) ? a.content_bn : (lang==='ar' && a.content_ar) ? a.content_ar : (a.content_en || '');
+      if(typeof content === 'function') content = content();
+      // render Arabic reference block if present
+      let refHtml = '';
+      if(a.ref_ar || a.ref_en){
+        refHtml += `<div style="margin-top:12px;padding:12px;background:#fff8e6;border-left:4px solid ${getComputedStyle(document.documentElement).getPropertyValue('--gold') || '#c8a44c'}"><strong>References</strong><div style="margin-top:8px"><div><em>Arabic:</em><div style="direction:rtl;font-size:20px;margin-top:6px">${a.ref_ar||''}</div></div><div style="margin-top:8px"><em>Translation:</em><div style="margin-top:6px">${a.ref_en||''}</div></div></div></div>`;
+      }
+      document.getElementById('modalBody').innerHTML = content.split('\n\n').map(p=>`<p>${escapeHtml(p)}</p>`).join('') + refHtml;
+      document.getElementById('articleModal').classList.add('show');
+    }
+    function closeModal(){ document.getElementById('articleModal').classList.remove('show'); }
+    function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // init
+    if(!localStorage.getItem('loi_lang')) localStorage.setItem('loi_lang','en');
+    renderList();
+  </script>
+</body>
+</html>
