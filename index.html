@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html>1
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -60,7 +60,13 @@
 
 </div>
 
-        <div class="brand"><h1>Light of Islam</h1><p class="small">Prayer • Qibla • Hadith • Articles</p></div>
+       <div class="brand">
+  <a href="index.html">
+    <img src="https://raw.githubusercontent.com/lightofislam426-creator/Light-of-Islam/main/images/light-of-islam-logo.png" 
+         alt="Light of Islam Logo" 
+         style="height:80px; width:auto; border-radius:12px;">
+  </a>
+<p class="small">Prayer • Qibla • Hadith • Articles</p></div>
       </div>
 
       <nav class="nav" aria-label="Main nav">
@@ -292,117 +298,82 @@ Practical: Purify intention, avoid modern forms of shirk, rely on authentic scho
 /* ============ Render articles list ============ */
 function renderArticles(){
   const root = document.getElementById('articlesList');
-  if(!root) return;
   root.innerHTML = '';
-  const lang = LOI_LANG || 'en';
   articles.forEach(a=>{
-    const title = (lang==='bn'? (a.title_bn||a.title_en) : (lang==='ar'? (a.title_ar||a.title_en) : a.title_en));
-    const excerpt = (lang==='bn' && a.content_bn) ? a.content_bn.slice(0,240) : (lang==='ar' && a.content_ar) ? a.content_ar.slice(0,240) : a.content_en.slice(0,240);
-    const el = document.createElement('div'); el.className='article-card';
-    el.innerHTML = `<div class="article-title">${escapeHtml(title)}</div><div class="article-meta">${a.author} • ${a.date} • Category ${a.cat}</div><p class="small">${escapeHtml(excerpt)}...</p><div style="margin-top:8px"><a href="javascript:openArticle('${a.id}')">Read full</a></div>`;
-    root.appendChild(el);
+    const title = LOI_LANG==='en'?a.title_en:LOI_LANG==='bn'?a.title_bn:a.title_ar;
+    const excerpt = LOI_LANG==='en'?a.excerpt:LOI_LANG==='bn'?a.excerpt:a.excerpt;
+    const item = document.createElement('div');
+    item.className = 'article-card';
+    item.innerHTML = `
+      <div class="article-title">${escapeHtml(title)}</div>
+      <div class="article-meta">${a.author} • ${a.date}</div>
+      <div class="small" style="margin-top:4px">${escapeHtml(excerpt)}</div>
+    `;
+    item.onclick = ()=>openArticle(a);
+    root.appendChild(item);
   });
 }
-renderArticles();
 
 /* ============ Article modal ============ */
-function openArticle(id){
-  const a = articles.find(x=>x.id===id); if(!a) return;
-  const lang = LOI_LANG || 'en';
-  const title = (lang==='bn'? (a.title_bn||a.title_en) : (lang==='ar'? (a.title_ar||a.title_en) : a.title_en));
-  let content = (lang==='bn' && a.content_bn) ? a.content_bn : (lang==='ar' && a.content_ar) ? a.content_ar : a.content_en;
-  const refHtml = `<div style="margin-top:12px;padding:12px;background:#fff8e6;border-left:4px solid var(--gold)"><strong>References</strong><div style="margin-top:8px"><div style="direction:rtl;font-size:18px">${a.ref_ar||''}</div><div style="margin-top:8px">${escapeHtml(a.ref_en||'')}</div></div></div>`;
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = content.split('\n\n').map(p=>`<p>${escapeHtml(p)}</p>`).join('') + refHtml;
+function openArticle(a){
   document.getElementById('articleModal').classList.add('show');
+  document.getElementById('modalTitle').textContent =
+    LOI_LANG==='en'?a.title_en:LOI_LANG==='bn'?a.title_bn:a.title_ar;
+  document.getElementById('modalBody').innerHTML =
+    '<p>'+ (LOI_LANG==='en'?a.content_en:LOI_LANG==='bn'?a.content_bn:a.content_ar).replace(/\n/g,'<br>') +'</p>' +
+    `<div style="margin-top:12px;font-size:13px;color:var(--muted)">
+      <b>Ref:</b> ${a.ref_en} — <span dir="rtl">${a.ref_ar}</span>
+    </div>`;
 }
-function closeModalArticle(){ document.getElementById('articleModal').classList.remove('show'); }
+function closeModalArticle(){
+  document.getElementById('articleModal').classList.remove('show');
+}
 
-/* ============ Hadith ============ */
+/* ============ Hadith Randomizer ============ */
 const hadiths = [
- {en:"The Prophet (ﷺ) said: The best among you are those who learn the Qur'an and teach it. — Sahih al-Bukhari", bn:"রাসুল (ﷺ) বলেছেন: তোমাদের মধ্যে সেরা তারা যারা কোরআন শেখে ও শেখায়।", ar:"قال ﷺ: خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ."},
- {en:"Actions are judged by intentions. — Sahih al-Bukhari", bn:"কর্মসমূহ উদ্দেশ্য দ্বারা বিচারিত হয়।", ar:"الأعمال بالنيات."},
- {en:"Whoever believes in Allah and the Last Day, let him speak good or remain silent. — Sahih Muslim", bn:"যে আল্লাহ ও পরকালের বিশ্বাসী হউক, সে ভালো কথা বলুক বা নীরব থাকুক।", ar:"مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ..."},
- {en:"The best of people are those who benefit others.", bn:"মানুষের সেরা হলো যারা অন্যকে উপকৃত করে।", ar:"خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ."}
+  {en:"Actions are judged by intentions.",bn:"কাজ নিয়তের উপর নির্ভর করে।",ar:"إنما الأعمال بالنيات"},
+  {en:"The strong man is one who controls anger.",bn:"বলবান সেই, যে রাগ নিয়ন্ত্রণ করে।",ar:"ليس الشديد بالصرعة"},
+  {en:"Smiling is charity.",bn:"হাসি দান সদকা।",ar:"تبسمك في وجه أخيك صدقة"}
 ];
-function hadithOfDay(){ const d=new Date(); return hadiths[(d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate()) % hadiths.length]; }
-function renderHadith(){ const h=hadithOfDay(); const lang = LOI_LANG || 'en'; const t = (lang==='bn'?h.bn:(lang==='ar'?h.ar:h.en)); try{ document.getElementById('hadithText').textContent = t; }catch(e){} }
-function newHadith(){ const r=hadiths[Math.floor(Math.random()*hadiths.length)]; document.getElementById('hadithText').textContent = (LOI_LANG==='bn'?r.bn:(LOI_LANG==='ar'?r.ar:r.en)); }
+function renderHadith(){ newHadith(); }
+function newHadith(){
+  const h = hadiths[Math.floor(Math.random()*hadiths.length)];
+  document.getElementById('hadithText').textContent =
+    LOI_LANG==='en'?h.en:LOI_LANG==='bn'?h.bn:h.ar;
+}
+
+/* ============ Contact Form (demo) ============ */
+function submitContact(e){
+  e.preventDefault();
+  document.getElementById('contactStatus').style.display='block';
+  document.getElementById('contactStatus').textContent='Message sent successfully (demo only).';
+  e.target.reset();
+}
+
+/* ============ Login modal demo ============ */
+const modal=document.getElementById('loginModal');
+document.getElementById('loginBtn').onclick=()=>modal.classList.add('show');
+function closeModal(){modal.classList.remove('show');}
+function signup(){localStorage.setItem('loi_user',document.getElementById('authEmail').value);updateUser();}
+function login(){updateUser();}
+function googleLogin(){alert('Google login placeholder');}
+function logout(){localStorage.removeItem('loi_user');updateUser();}
+function updateUser(){
+  const u=localStorage.getItem('loi_user');
+  const ua=document.getElementById('userArea'), aa=document.getElementById('authArea');
+  if(u){ua.style.display='block';aa.style.display='none';document.getElementById('currentUser').textContent='Logged in as '+u;}
+  else{ua.style.display='none';aa.style.display='block';}
+}
+updateUser();
+
+/* ============ Placeholder Prayer/Qibla ============ */
+function getPrayerTimesByCity(){alert('Prayer time API will be added.');}
+function getPrayerTimesByGeo(){alert('Using location (demo).');}
+function getQiblaByGeo(){alert('Qibla direction tool will be added.');}
+
+/* ============ Initial Render ============ */
+renderArticles();
 renderHadith();
-
-/* ============ Prayer Times (AlAdhan) ============ */
-async function setPrayerTimes(data){ try{ const timings = data.data.timings; document.getElementById('tFajr').textContent = timings.Fajr; document.getElementById('tSunrise').textContent = timings.Sunrise; document.getElementById('tDhuhr').textContent = timings.Dhuhr; document.getElementById('tAsr').textContent = timings.Asr; document.getElementById('tMaghrib').textContent = timings.Maghrib; document.getElementById('tIsha').textContent = timings.Isha; document.getElementById('prayerMeta').textContent = 'Times updated for '+(data.data.meta.timezone||'your location'); }catch(e){ console.warn(e); } }
-
-async function getPrayerTimesByGeo(){ if(!navigator.geolocation){ alert('Geolocation not supported'); return; } navigator.geolocation.getCurrentPosition(async pos=>{ const lat=pos.coords.latitude.toFixed(6), lon=pos.coords.longitude.toFixed(6); try{ const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=5`); const data = await res.json(); setPrayerTimes(data); }catch(e){ alert('Prayer times fetch failed'); } }, ()=>alert('Allow location to use this feature')); }
-
-async function getPrayerTimesByCity(){ const city = document.getElementById('cityInput').value.trim(); if(!city){ alert('Type a city name or use location'); return; } try{ const geo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`); const gdata = await geo.json(); if(!gdata || !gdata[0]){ alert('City not found'); return; } const lat = parseFloat(gdata[0].lat).toFixed(6), lon = parseFloat(gdata[0].lon).toFixed(6); const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=5`); const data = await res.json(); setPrayerTimes(data); }catch(e){ alert('Could not fetch prayer times'); } }
-
-/* ============ Qibla (AlAdhan) ============ */
-async function getQiblaByGeo(){ if(!navigator.geolocation){ alert('Geolocation not supported'); return; } navigator.geolocation.getCurrentPosition(async pos=>{ const lat=pos.coords.latitude, lon=pos.coords.longitude; try{ const res = await fetch(`https://api.aladhan.com/v1/qibla/${lat}/${lon}`); const data = await res.json(); drawCompass(data.data.direction); }catch(e){ alert('Qibla fetch failed'); } }, ()=>alert('Allow location to use this feature')); }
-
-function drawCompass(dir){ const c=document.getElementById('qiblaCompass'); if(!c) return; const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); const cx=c.width/2, cy=c.height/2, r=Math.min(cx,cy)-18; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle='#f6fffb'; ctx.fill(); ctx.strokeStyle='#e6efe6'; ctx.lineWidth=6; ctx.stroke(); ctx.fillStyle='#0b5a3a'; ctx.font='18px sans-serif'; ctx.textAlign='center'; ctx.fillText('N', cx, cy - r + 24); const angle=(dir)*Math.PI/180; ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle); ctx.beginPath(); ctx.moveTo(0,-r+12); ctx.lineTo(10,0); ctx.lineTo(-10,0); ctx.closePath(); ctx.fillStyle='#c8a44c'; ctx.fill(); ctx.restore(); ctx.fillStyle='#0b5a3a'; ctx.font='14px sans-serif'; ctx.fillText(Math.round(dir)+'° from North', cx, cy + r - 8); if(document.getElementById('qiblaResult')) document.getElementById('qiblaResult').textContent = 'Qibla direction: '+Math.round(dir)+'° from North'; }
-
-/* Try auto-update prayer on load if permission given */
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(pos=>{ fetch(`https://api.aladhan.com/v1/timings?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=5`).then(r=>r.json()).then(setPrayerTimes).catch(()=>{}); }, ()=>{});
-}
-
-/* ============ Contact form (demo) ============ */
-function submitContact(e){ e.preventDefault(); const name=document.getElementById('contactName').value; const email=document.getElementById('contactEmail').value; const msg=document.getElementById('contactMessage').value; document.getElementById('contactStatus').style.display='block'; document.getElementById('contactStatus').textContent='Message received (demo). To receive as email, replace submitContact() with Formspree endpoint or server.'; setTimeout(()=>{ document.getElementById('contactStatus').style.display='none'; },4000); }
-
-/* ============ Auth (local demo) ============ */
-const authKey = 'loi_users_v1';
-function loadUsers(){ try{ return JSON.parse(localStorage.getItem(authKey)||'{}'); }catch(e){ return {}; } }
-function saveUsers(u){ localStorage.setItem(authKey, JSON.stringify(u)); }
-function hashPwd(p){ let h=0; for(let i=0;i<p.length;i++){ h=((h<<5)-h)+p.charCodeAt(i); h|=0; } return h.toString(36); }
-function signup(){ const email=document.getElementById('authEmail').value.trim().toLowerCase(); const pass=document.getElementById('authPassword').value; if(!email||!pass){ alert('Provide email & password'); return; } const users=loadUsers(); if(users[email]){ alert('User exists. Please login'); return; } users[email]={email,pass:hashPwd(pass),created:new Date().toISOString()}; saveUsers(users); alert('Signup successful — logged in'); setCurrentUser(email); closeModal(); }
-function login(){ const email=document.getElementById('authEmail').value.trim().toLowerCase(); const pass=document.getElementById('authPassword').value; const users=loadUsers(); if(!users[email]||users[email].pass!==hashPwd(pass)){ alert('Invalid credentials'); return; } alert('Login successful'); setCurrentUser(email); closeModal(); }
-function logout(){ localStorage.removeItem('loi_current'); renderAuthArea(); }
-function setCurrentUser(email){ localStorage.setItem('loi_current', email); renderAuthArea(); }
-function getCurrentUser(){ return localStorage.getItem('loi_current'); }
-function renderAuthArea(){ const cur=getCurrentUser(); if(cur){ document.getElementById('authArea').style.display='none'; document.getElementById('userArea').style.display='block'; document.getElementById('currentUser').textContent=cur; } else { document.getElementById('authArea').style.display='block'; document.getElementById('userArea').style.display='none'; } }
-document.getElementById('loginBtn').onclick = ()=>{ document.getElementById('loginModal').classList.add('show'); renderAuthArea(); }
-function closeModal(){ document.getElementById('loginModal').classList.remove('show'); }
-
-/* Google Login placeholder — To enable real Google sign-in:
-   1) Create Firebase project and enable Google Sign-In
-   2) Add Firebase config below (replace the config object)
-   3) Uncomment initializeApp(...) and googleSignIn() function
-   4) Ensure Authorized domains include your domain (lightofislam.top)
-*/
-function googleLogin(){
-  alert('Google Sign-In placeholder. For real Google login, follow the README steps to add Firebase config. This will login a demo google_user@lightofislam.local account.');
-  const demo='google_user@lightofislam.local'; const users=loadUsers(); if(!users[demo]){ users[demo]={email:demo,pass:hashPwd('google'),created:new Date().toISOString()}; saveUsers(users); } setCurrentUser(demo); closeModal();
-}
-
-/* ============ Initial renders ============ */
-try{ renderArticles(); renderHadith(); renderAuthArea(); }catch(e){}
-
-/* ================= README / Quick instructions (in-browser console shown) =================
-1) Firebase Google Auth (production):
-   - Go to https://console.firebase.google.com -> Create project -> Authentication -> Sign-in method -> Enable Google
-   - Add Authorized domains: lightofislam.top and <your-github-pages-domain>
-   - Copy firebaseConfig and paste below, then uncomment initialization lines.
-
-Example Firebase config (DO NOT commit your real keys to public repos without restrictions):
-// const firebaseConfig = { apiKey: "API_KEY", authDomain: "PROJECT.firebaseapp.com", ... };
-// firebase.initializeApp(firebaseConfig);
-
-2) Formspree (Contact emails):
-   - Use Formspree free plan: https://formspree.io -> create form -> get endpoint
-   - Replace submitContact() to POST the form to Formspree URL
-
-3) AdSense:
-   - After AdSense approval, paste ad script into the Donate/Ads card
-
-4) HTTPS & OAuth:
-   - Make sure Enforce HTTPS is ON in GitHub Pages settings and Firebase authorized domain includes your domain.
-
-5) If you want me to push a repository commit directly, provide a temporary GitHub token OR add me as collaborator (I cannot accept direct repo access from here). Otherwise, copy this file and replace your current index.html.
-
-====================================================================================== */
-
 </script>
-
 </body>
 </html>
